@@ -21,6 +21,7 @@ const Navbar = () => {
         Cookies.remove('session');
     }
 
+    console.log(currentUser && JSON.parse(currentUser).val !== 1);
     return (
         <nav className="navbar navbar-expand-lg  navbar-dark p-4 nav-bac">
             <div className="container">
@@ -72,7 +73,7 @@ const Navbar = () => {
                         <Link type="button" className="btn btn-outline-primary me-3" to="/login">Login</Link>
                         <Link type="button" className="btn btn-outline-light" to="/signup">Signup</Link>
                     </>}
-                    {currentUser && JSON.parse(currentUser).val !== 1 &&
+                    {((currentUser && JSON.parse(currentUser).val !== 1) || !currentUser) &&
                         <div className='text-white ms-lg-4 mt-lg-0 mt-3 fs-5 cart-x'>
                             <Link href="#" className='text-white' to="/cart"><BsCart4 className='cart-l' /></Link>
                             <h6>{currentCount ? currentCount : countItems}</h6>
