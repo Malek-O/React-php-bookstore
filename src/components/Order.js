@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './Navbar'
 import Cookies from 'js-cookie';
+import CryptoJS from 'crypto-js';
 
 const Order = () => {
 
     const [orderData, setOrderData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
+
+    const getData = async () => {
+        if (Cookies.get("session")) {
+            const bytes = CryptoJS.AES.decrypt(Cookies.get("session"), process.env.REACT_APP_SECRET_KEY);
+            const userData = bytes.toString(CryptoJS.enc.Utf8);
+            //console.log(JSON.parse(userData));
+            setCurrentUser(JSON.parse(userData))
+        }
+    }
 
     const fetchOrderData = async () => {
-        let id = JSON.parse(Cookies.get('session')).id;
+        let id = currentUser ? currentUser.id : "";
         const formData = new FormData();
         formData.append('id', id);
 
-        const response = await fetch('http://localhost/bookstore/getOrder.php', {
+        const response = await fetch('https://mybook-1.000webhostapp.com/getOrder.php', {
             method: 'POST',
             body: formData
         });
@@ -29,9 +40,13 @@ const Order = () => {
     }
 
     useEffect(() => {
-        fetchOrderData();
+        getData()
     }, [])
+    useEffect(() => {
+        fetchOrderData();
+    }, [currentUser])
 
+    // console.log(currentUser);
     return (
         <div>
             <Navbar />

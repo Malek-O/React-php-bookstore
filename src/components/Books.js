@@ -2,6 +2,8 @@ import Navbar from './Navbar'
 import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from './App'
 import Cookies from 'js-cookie';
+import CryptoJS from 'crypto-js';
+
 const Books = () => {
 
 
@@ -30,30 +32,31 @@ const Books = () => {
         setCountItems(count);
         if (noItems && count) {
             Cookies.set('cartItem', count);
-            Cookies.set('allItems', JSON.stringify(noItems));
+            const encryptedData = CryptoJS.AES.encrypt(
+                JSON.stringify(noItems),
+                process.env.REACT_APP_SECRET_KEY
+            ).toString();
+            Cookies.set('allItems', encryptedData);
             setNoItems([])
         }
     }, [noItems])
 
     useEffect(() => {
-        let bookData = [];
-        fetch('http://localhost/bookstore/getBooks.php')
+        fetch('https://mybook-1.000webhostapp.com/getBooks.php')
             .then(response => response.json())
-            .then(data => bookData = data);
-
-        setTimeout(() => {
-            setBooks(bookData)
-        }, 100);
+            .then(data => setBooks(data));
     }, [])
 
 
     const handleAddToCart = () => {
         let updatedCart = []
+        let count = 0;
         Object.keys(bookItems).forEach(key => {
             updatedCart = [...updatedCart, {
-                ...books[key - 1],
+                ...books[count],
                 count: bookItems[key]
             }];
+            count++
         });
         setNoItems(updatedCart.filter((item) => item.count > 0));
     }
@@ -73,6 +76,7 @@ const Books = () => {
     };
 
 
+    console.log(noItems);
     return (
         <div>
             <Navbar />

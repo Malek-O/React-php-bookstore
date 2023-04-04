@@ -33,7 +33,7 @@ const Signup = () => {
         formData.append('pwdrepeat', formInfo.pwdrepeat);
         formData.append('submit', 'submit');
 
-        const response = await fetch('http://localhost/bookstore/signup.php', {
+        const response = await fetch('https://mybook-1.000webhostapp.com/signup.php', {
             method: 'POST',
             body: formData
         });
@@ -84,7 +84,7 @@ const Signup = () => {
                         <input type="password" className="form-control" name="pwdrepeat"
                             value={formInfo.pwdrepeat} onChange={hanldeChange} />
                     </div>
-                    <button type="submit" className="btn btn-outline-success w-25" name="submit"
+                    <button type="submit" className="btn btn-outline-success " name="submit"
                     >Sign up</button>
                 </form>
             </section>

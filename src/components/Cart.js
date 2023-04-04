@@ -6,17 +6,40 @@ import { Link } from 'react-router-dom';
 import { BsFillTrashFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from "react-hot-toast";
+import CryptoJS from 'crypto-js';
 
 
 const Cart = () => {
 
-
-    const [currentItems, setCurrentItems] = useState(Cookies.get('allItems') ? JSON.parse(Cookies.get('allItems')) : [])
     const { setCountItems } = useContext(AppContext);
+
+    const [currentItems, setCurrentItems] = useState([])
     const [total, setTotal] = useState(0);
-    let currentUser = Cookies.get('session') ? Cookies.get('session') : null;
+    const [currentUser, setCurrentUser] = useState(null);
     const navigate = useNavigate();
 
+    const getAllItems = async () => {
+        if (Cookies.get("allItems")) {
+            const bytes = CryptoJS.AES.decrypt(Cookies.get("allItems"), process.env.REACT_APP_SECRET_KEY);
+            const userData = bytes.toString(CryptoJS.enc.Utf8);
+            //console.log(JSON.parse(userData));
+            setCurrentItems(JSON.parse(userData))
+        }
+    }
+
+    const getData = async () => {
+        if (Cookies.get("session")) {
+            const bytes = CryptoJS.AES.decrypt(Cookies.get("session"), process.env.REACT_APP_SECRET_KEY);
+            const userData = bytes.toString(CryptoJS.enc.Utf8);
+            //console.log(JSON.parse(userData));
+            setCurrentUser(JSON.parse(userData))
+        }
+    }
+
+    useEffect(() => {
+        getData()
+        getAllItems()
+    }, [])
 
     useEffect(() => {
         let count = 0;
@@ -43,7 +66,11 @@ const Cart = () => {
             }
             return item;
         });
-        Cookies.set('allItems', JSON.stringify(updatedItems));
+        const encryptedData = CryptoJS.AES.encrypt(
+            JSON.stringify(updatedItems),
+            process.env.REACT_APP_SECRET_KEY
+        ).toString();
+        Cookies.set('allItems', encryptedData);
         setCurrentItems(updatedItems);
     };
 
@@ -58,13 +85,21 @@ const Cart = () => {
             return item;
 
         });
-        Cookies.set('allItems', JSON.stringify(updatedItems));
+        const encryptedData = CryptoJS.AES.encrypt(
+            JSON.stringify(updatedItems),
+            process.env.REACT_APP_SECRET_KEY
+        ).toString();
+        Cookies.set('allItems', encryptedData);
         setCurrentItems(updatedItems);
     };
 
     const removeItem = (id) => {
         const updatedItems = currentItems.filter((item) => item.b_id !== id)
-        Cookies.set('allItems', JSON.stringify(updatedItems));
+        const encryptedData = CryptoJS.AES.encrypt(
+            JSON.stringify(updatedItems),
+            process.env.REACT_APP_SECRET_KEY
+        ).toString();
+        Cookies.set('allItems', encryptedData);
         setCurrentItems(updatedItems);
     }
 
@@ -85,16 +120,15 @@ const Cart = () => {
     }
 
     const hanldeOrder = async () => {
-        let id = JSON.parse(Cookies.get('session')).id;
         let price = parseFloat(total.toFixed(2));
         let status = 0;
 
         const formData = new FormData();
-        formData.append('id', id);
+        formData.append('id', currentUser.id);
         formData.append('price', price);
         formData.append('status', status);
 
-        const response = await fetch('http://localhost/bookstore/order.php', {
+        const response = await fetch('https://mybook-1.000webhostapp.com/order.php', {
             method: 'POST',
             body: formData
         });
@@ -111,6 +145,8 @@ const Cart = () => {
             }, 500);
         }
     }
+
+    //console.log(currentUser);
 
     return (
         <div>

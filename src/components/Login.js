@@ -4,11 +4,13 @@ import { AppContext } from './App';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import toast, { Toaster } from "react-hot-toast";
+import CryptoJS from 'crypto-js';
 
 const Login = () => {
 
     const { setUserInfo } = useContext(AppContext);
     const navigate = useNavigate();
+    const [flag, setFlag] = useState(true);
     const [formInfo, setFormInfo] = useState(
         {
             uid: "",
@@ -33,7 +35,7 @@ const Login = () => {
         formData.append('pwd', formInfo.pwd);
         formData.append('submit', 'submit');
 
-        const response = await fetch('http://localhost/bookstore/login.php', {
+        const response = await fetch('https://mybook-1.000webhostapp.com/login.php', {
             method: 'POST',
             body: formData
         });
@@ -45,7 +47,12 @@ const Login = () => {
             toast.success(data.message)
             setTimeout(() => {
                 setUserInfo(data.data);
-                Cookies.set('session', JSON.stringify(data.data));
+                const encryptedData = CryptoJS.AES.encrypt(
+                    JSON.stringify(data.data),
+                    process.env.REACT_APP_SECRET_KEY
+                ).toString();
+                Cookies.set('session', encryptedData);
+                setFlag(!flag)
                 navigate('/');
             }, 500);
         }
@@ -75,7 +82,7 @@ const Login = () => {
                         <input type="password" className="form-control" id="exampleInputPassword1" name="pwd"
                             value={formInfo.pwd} onChange={hanldeChange} />
                     </div>
-                    <button type="submit" className="btn btn-outline-success w-25 mt-3" name="submit">Login</button>
+                    <button type="submit" className="btn btn-outline-success  mt-3" name="submit">Login</button>
                 </form>
             </section>
         </div>
