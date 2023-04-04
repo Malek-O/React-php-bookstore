@@ -73,7 +73,6 @@ const Cart = () => {
         Cookies.set('allItems', encryptedData);
         setCurrentItems(updatedItems);
     };
-
     const handleDecrease = (id) => {
         const updatedItems = currentItems.map((item) => {
             if (item.b_id === id && item.count > 1) {
